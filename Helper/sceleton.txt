@@ -1,1 +1,45 @@
-Recommended Notebook Skeleton Setup Install libs, set seeds, pick model_name, paths. Data load Load PersianQA. Immediately split train → (train, val) if a dev split isn’t given. EDA (train-only) Lengths (context/question/answer), class balance (answerable vs unanswerable), language quirks (ZWNJ, punctuation). Do not peek at test for EDA. Text normalization decisions (frozen before training) E.g., Persian ZWNJ cleaner, whitespace normalization, punctuation rules. Decide once (based on train/your prior knowledge), then apply the same function to val/test/ParsiNLU. Don’t “fit” cleaners on test (no statistics collected from test). Tokenization (same config for all splits) Choose max_length, stride (for long contexts), truncation policy. You configure tokenization on train, then reuse exactly the same for val/test/ParsiNLU. Tokenizer is pre-trained (no “fitting”), so no leakage risk, but keep params identical. Dataloaders Build for train/val. Keep test loader ready but don’t run it yet. Model setup Load pre-trained (e.g., ParsBERT/XLM-R), QA head. Training Train on train split only. Validation & hyper-parameter tuning Evaluate on val each epoch. Tune LR, epochs, max_length/stride, and no-answer threshold (if applicable) using val only. Lock config Once you settle the best config/checkpoint on val, freeze everything. Final evaluation (one-time) Run on PersianQA test. Save predictions, F1/EM, and a CSV/JSON of errors. External generalization (optional but strong) Adapt ParsiNLU-QA format → run exact same prediction & metric pipeline. Report zero-shot scores (and, if allowed, a second experiment fine-tuning on ParsiNLU train, clearly separated). Error analysis & ablations (adds resume value) Buckets: context length, answer type (name/date/location), unanswerables, threshold sweeps. Show top FP/FN examples. Reproducibility One cell that runs eval end-to-end; log versions; save seeds/configs.
+## 📌 Project Roadmap: PersianQA Fine-Tuning
+
+1. **Load Data ✅**  
+   - Implemented a robust loader (`load_persianqa`)  
+   - Handles local JSONs, Drive cache, Hugging Face Hub, or GitHub clone  
+
+2. **Exploratory Data Analysis (EDA) ✅**  
+   - Basic dataset overview  
+   - Core statistics (context/question lengths, answers)  
+   - Integrity checks (span mismatches, empty answers)  
+   - Length distributions  
+   - Duplicate & leakage detection  
+
+3. **Data Cleaning & Preprocessing**  
+   - Remove/fix span mismatch examples  
+   - Handle duplicates or leaks across splits  
+   - Normalize text (optional: remove extra whitespace/diacritics)  
+
+4. **Tokenization & Feature Preparation**  
+   - Use `AutoTokenizer` (ParsBERT / XLM-R)  
+   - Convert Q + context into tokenized inputs  
+   - Align answer spans with token positions  
+
+5. **Model Setup**  
+   - Load pretrained QA model (`AutoModelForQuestionAnswering`)  
+   - Choose training hyperparameters (lr, epochs, batch size, max_length, stride)  
+
+6. **Training**  
+   - Fine-tune ParsBERT  
+   - Fine-tune XLM-R  
+   - Save checkpoints  
+
+7. **Evaluation**  
+   - Compute EM (Exact Match) and F1 on validation/test split  
+   - Compare ParsBERT vs XLM-R  
+
+8. **Analysis & Reporting**  
+   - Summarize results (tables/plots)  
+   - Discuss performance differences  
+   - Identify error cases (e.g., long contexts, ambiguous answers)  
+
+9. **Optional Extensions**  
+   - Hyperparameter tuning (grid search or manual sweeps)  
+   - Experiment with data augmentation  
+   - Push trained models to Hugging Face Hub  
